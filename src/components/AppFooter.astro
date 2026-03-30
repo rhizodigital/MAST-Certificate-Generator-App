@@ -1,0 +1,10 @@
+---
+/**
+ * AppFooter — shared bottom bar with copyright / branding text.
+ * Used by Layout.astro and CertificateLayout.astro.
+ */
+import { brand } from '../config/brand';
+---
+<footer class="shrink-0 text-center text-xs text-slate-700 py-3 border-t border-slate-800">
+  {brand.footerText}
+</footer>

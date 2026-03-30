@@ -1,0 +1,160 @@
+---
+/**
+ * MAST Prestige — Full dark navy with gold ornate border.
+ * Formal award style for Employee of the Year, Long Service, etc.
+ * A4 Landscape.
+ *
+ * Fields:
+ *  recipientName  → recipient's full name
+ *  awardType      → award title (e.g. "Employee of the Year 2026")
+ *  date           → date awarded
+ *  issuerName     → left signatory name
+ *  issuerTitle    → left signatory title
+ *  issuer2Name    → right signatory name
+ *  issuer2Title   → right signatory title
+ *  customMessage  → optional citation / body text
+ */
+import CertificateLayout from "../../layouts/CertificateLayout.astro";
+import BorderFrame from "../../certificate-templates/certificate-components/BorderFrame.astro";
+import DividerLine from "../../certificate-templates/certificate-components/DividerLine.astro";
+import MastMedallion from "../../certificate-templates/certificate-components/MastMedallion.astro";
+import NetworkPattern from "../../certificate-templates/certificate-components/NetworkPattern.astro";
+import MastLogoWhite from "../../assets/MastLogoWhite.svg";
+import WavyLines from "../../assets/wavy-lines.svg";
+import { Image as AstroImage } from "astro:assets";
+---
+
+<CertificateLayout templateId="mast-prestige" orientation="landscape">
+  <div
+    class="cert cert-prestige-mast relative overflow-hidden w-280.5 h-198.5 font-serif bg-mast-navy"
+    id="cert-canvas"
+  >
+    <!-- ── Gold ornate double border frame ──────────────────── -->
+    <BorderFrame
+      variant="ornate"
+      primaryColor="var(--color-mast-gold)"
+      accentColor="var(--color-mast-gold-dark)"
+      cornerSize={72}
+    />
+
+    <WavyLines
+      class="absolute inset-0 -left-1/4 w-[150%] -top-50 h-auto opacity-5 pointer-events-none"
+      style="color: var(--color-mast-gold);"
+      aria-hidden="true"
+    />
+
+    <!-- ── Main content column ──────────────────────────────── -->
+    <div
+      class="relative z-10 flex flex-col items-center justify-center gap-5 h-full text-center py-14 px-24"
+    >
+      <!-- Logo (gold-tinted on dark bg) -->
+      <MastLogoWhite class="h-22 w-auto mb-4 text-mast-parchment" />
+
+      <!-- Top divider -->
+      <DividerLine
+        variant="diamond-filled"
+        stroke="thin"
+        color="var(--color-mast-gold)"
+        class="w-[280px]"
+      />
+
+      <!-- Heading block -->
+      <div class="flex flex-col items-center gap-2">
+        <p
+          class="m-0 font-sans font-medium text-xs tracking-[0.5em] uppercase text-mast-steel-pale leading-none"
+        >
+          Certificate of
+        </p>
+        <p
+          class="m-0 font-sans text-[48px] font-bold tracking-[0.12em] uppercase leading-none text-mast-gold"
+        >
+          Excellence
+        </p>
+      </div>
+
+      <!-- Award type -->
+      <p
+        class="m-0 font-serif font-bold text-lg tracking-[0.22em] uppercase text-mast-gold leading-none"
+        data-field="awardType">Award Type</p
+      >
+
+      <!-- Recipient block -->
+      <div class="flex flex-col items-center gap-2.5">
+        <p
+          class="m-0 font-sans font-medium text-xs tracking-[0.32em] uppercase text-mast-steel-pale leading-none"
+        >
+          Presented to
+        </p>
+        <h1
+          class="m-0 font-serif text-[58px] font-normal italic leading-[1.05] text-mast-parchment text-shadow-gold-glow"
+          data-field="recipientName">Recipient Name</h1
+        >
+        <p
+          class="cert-prestige-mast-message m-0 font-sans italic text-[11.5px] max-w-[600px] leading-[1.65] text-mast-gold-shadow"
+          data-field="customMessage"></p>
+      </div>
+
+      <!-- Divider -->
+      <DividerLine
+        variant="diamond-filled"
+        stroke="thin"
+        color="var(--color-mast-gold)"
+        class="w-[320px]"
+      />
+
+      <!-- Signatures -->
+      <div class="flex justify-between items-end w-full max-w-[680px]">
+        <!-- Left signatory -->
+        <div class="flex flex-col items-center gap-2 min-w-[190px]">
+          <p
+            class="m-0 font-signature text-2xl leading-none text-mast-parchment"
+            data-field="issuerName">Signatory Name</p
+          >
+          <p
+            class="m-0 font-sans font-medium text-xs tracking-[0.24em] uppercase text-mast-gold-dim"
+            data-field="issuerTitle">Director of Security</p
+          >
+        </div>
+
+        <!-- Centre: date -->
+        <div class="flex flex-col items-center gap-2">
+          <p
+            class="m-0 font-serif text-lg text-mast-parchment"
+            data-field="date">Date</p
+          >
+          <p
+            class="m-0 font-sans font-medium text-xs tracking-[0.24em] uppercase text-mast-gold-dim"
+            >Date Awarded</p
+          >
+        </div>
+
+        <!-- Right signatory -->
+        <div class="flex flex-col items-center gap-2 min-w-[190px]">
+          <p
+            class="m-0 font-signature text-2xl leading-none text-mast-parchment"
+            data-field="issuer2Name">Signatory Name</p
+          >
+          <p
+            class="m-0 font-sans font-medium text-xs tracking-[0.24em] uppercase text-mast-gold-dim"
+            data-field="issuer2Title">Chief Executive Officer</p
+          >
+        </div>
+      </div>
+
+      <!-- Cert ID -->
+      <p
+        class="m-0 font-sans font-medium text-xs tracking-[0.2em] uppercase text-mast-gold-muted/60"
+      >
+        Cert. ID <span data-cert-id class="text-mast-gold-dim"
+          >MAST-2026-000000</span
+        >
+      </p>
+    </div>
+  </div>
+</CertificateLayout>
+
+<style is:global>
+  .cert-prestige-mast .cert-prestige-mast-message:empty {
+    display: none;
+  }
+</style>

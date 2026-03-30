@@ -1,0 +1,41 @@
+---
+/**
+ * Base layout — wraps all app pages.
+ * Provides global styles, brand header, and slot for page content.
+ */
+import { brand } from '../config/brand';
+import AppHeader  from '../components/AppHeader.astro';
+import AppFooter  from '../components/AppFooter.astro';
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  /** If true, the layout renders as a bare page (used for the certificate preview) */
+  bare?: boolean;
+}
+
+const { title = brand.appName, bare = false } = Astro.props;
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title} — {brand.appName}</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <!-- Tailwind v4 global styles injected via import above -->
+  {brand.logoPath && <link rel="icon" href={brand.logoPath} />}
+  <!-- Slot for page-specific head content (scripts, meta, etc.) -->
+  <slot name="head" />
+</head>
+<body class="bg-slate-950 text-slate-200 min-h-screen flex flex-col">
+
+  {!bare && <AppHeader />}
+
+  <!-- ── Page content ── -->
+  <slot />
+
+  {!bare && <AppFooter />}
+
+</body>
+</html>

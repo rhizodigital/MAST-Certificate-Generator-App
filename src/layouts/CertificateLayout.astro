@@ -1,0 +1,519 @@
+---
+/**
+ * CertificateLayout — the complete generator UI.
+ *
+ * Every certificate template page imports this layout and drops its
+ * certificate HTML into the default <slot />.
+ *
+ * Dynamic fields are updated purely client-side: the layout JS finds
+ * elements with [data-field="recipientName"] etc. inside the slot and
+ * sets their textContent as the user types — no server round-trip,
+ * no iframe, instant preview.
+ *
+ * Template pages own all their own styles (scoped <style> blocks or
+ * Tailwind classes).  The layout contributes only the app-chrome styles.
+ *
+ * Props
+ * ─────
+ *  templateId   – ID of the active template (highlights picker card)
+ *  orientation  – 'landscape' | 'portrait'  (default: landscape)
+ */
+import { TEMPLATES } from "../certificate-templates/index";
+import { brand } from "../config/brand";
+import AppHeader from "../components/AppHeader.astro";
+import AppFooter from "../components/AppFooter.astro";
+import TemplatePicker from "../components/TemplatePicker.astro";
+import CertificateForm from "../components/CertificateForm.astro";
+import PreviewToolbar from "../components/PreviewToolbar.astro";
+import "../styles/global.css";
+import "@fontsource/pt-serif";
+import "@fontsource/pt-serif/400-italic.css";
+import "@fontsource/pt-serif/700.css";
+import "@fontsource/pt-serif/700-italic.css";
+import "@fontsource-variable/ibm-plex-sans";
+import "@fontsource-variable/ibm-plex-sans/wght-italic.css";
+import "@fontsource-variable/dancing-script";
+
+interface Props {
+  templateId: string;
+  orientation?: "landscape" | "portrait";
+}
+
+const { templateId, orientation = "landscape" } = Astro.props;
+
+const certW = orientation === "portrait" ? 794 : 1122;
+const certH = orientation === "portrait" ? 1122 : 794;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Certificate Generator — {brand.appName}</title>
+    <meta name="robots" content="noindex, nofollow" />
+    {brand.logoPath && <link rel="icon" href={brand.logoPath} />}
+    <!-- html-to-image + jsPDF are bundled from npm — no CDN scripts needed -->
+  </head>
+  <body class="bg-slate-950 text-slate-200 min-h-screen flex flex-col">
+    <AppHeader />
+
+    <main
+      class="flex flex-1 overflow-hidden"
+      style="height:calc(100vh - 97px);"
+    >
+      <!-- ══════════════════════════════════════════════
+         LEFT SIDEBAR
+         ══════════════════════════════════════════════ -->
+      <aside
+        id="sidebar"
+        class="w-80 shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col overflow-hidden"
+      >
+        <TemplatePicker templates={TEMPLATES} activeId={templateId} />
+        <CertificateForm />
+      </aside>
+
+      <!-- ══════════════════════════════════════════════
+         PREVIEW PANEL
+         ══════════════════════════════════════════════ -->
+      <section
+        class="flex-1 bg-slate-950 flex flex-col overflow-hidden relative"
+      >
+        <PreviewToolbar orientation={orientation} />
+
+        <!-- Checkerboard hint -->
+        <div
+          class="absolute inset-0 pointer-events-none opacity-[0.04]"
+          style="background-image:repeating-conic-gradient(#94a3b8 0% 25%,transparent 0% 50%);background-size:24px 24px;"
+          aria-hidden="true"></div>
+
+        <!-- Certificate preview — centred, scaled to fit -->
+        <div
+          id="preview-outer"
+          class="flex-1 flex items-center justify-center overflow-hidden relative"
+        >
+          <!--
+          preview-scaler has fixed pixel dimensions matching the certificate.
+          CSS transform:scale() is applied by JS — doesn't affect layout since
+          the wrapper already has explicit w/h.
+        -->
+          <div
+            id="preview-scaler"
+            data-cert-w={certW}
+            data-cert-h={certH}
+            data-orientation={orientation}
+            style={`width:${certW}px; height:${certH}px; transform-origin:center center; flex-shrink:0;`}
+          >
+            <slot />
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <AppFooter />
+  </body>
+</html>
+
+<!-- ── Client interactivity ── -->
+<script>
+  import { toPng } from "html-to-image";
+  import { jsPDF } from "jspdf";
+
+  // ── Cert dimensions from data attributes ─────────────────────
+  const scaler = document.getElementById("preview-scaler") as HTMLElement;
+  const certW = Number(scaler.dataset.certW);
+  const certH = Number(scaler.dataset.certH);
+  const orientation = scaler.dataset.orientation as "landscape" | "portrait";
+
+  // ── Field registry ────────────────────────────────────────────
+  // Defines label, placeholder, input type, and sidebar group for
+  // every possible data-field key.  Templates declare which fields
+  // they use via [data-field] attributes; the form is built from
+  // whatever is actually present — no config needed per template.
+  //
+  // group 'primary'   → shown in the main Details section
+  // group 'secondary' → shown below a divider (always visible)
+  interface FieldDef {
+    label: string;
+    placeholder: string;
+    type: "input" | "textarea";
+    required: boolean;
+    group: "primary" | "secondary";
+    defaultValue?: string; // pre-filled value (set at runtime from data-*)
+  }
+
+  const FIELD_REGISTRY: Record<string, FieldDef> = {
+    recipientName: {
+      label: "Recipient Name",
+      placeholder: "e.g. Jane Smith",
+      type: "input",
+      required: true,
+      group: "primary",
+    },
+    awardType: {
+      label: "Award / Certificate Type",
+      placeholder: "e.g. Employee of the Month — March 2026",
+      type: "input",
+      required: true,
+      group: "primary",
+    },
+    role: {
+      label: "Role / Title",
+      placeholder: "e.g. Senior Security Officer",
+      type: "input",
+      required: false,
+      group: "primary",
+    },
+    courseName: {
+      label: "Course / Achievement",
+      placeholder: "e.g. Security Operations",
+      type: "input",
+      required: false,
+      group: "primary",
+    },
+    date: {
+      label: "Date",
+      placeholder: "e.g. March 2026",
+      type: "input",
+      required: false,
+      group: "primary",
+    },
+    companyName: {
+      label: "Company Name",
+      placeholder: "",
+      type: "input",
+      required: false,
+      group: "primary",
+    },
+    issuerName: {
+      label: "Signatory 1 — Name",
+      placeholder: "e.g. Adam Usher",
+      type: "input",
+      required: false,
+      group: "secondary",
+    },
+    issuerTitle: {
+      label: "Signatory 1 — Title",
+      placeholder: "",
+      type: "input",
+      required: false,
+      group: "secondary",
+    },
+    issuer2Name: {
+      label: "Signatory 2 — Name",
+      placeholder: "e.g. Phillip Cable",
+      type: "input",
+      required: false,
+      group: "secondary",
+    },
+    issuer2Title: {
+      label: "Signatory 2 — Title",
+      placeholder: "e.g. Chief Executive Officer",
+      type: "input",
+      required: false,
+      group: "secondary",
+    },
+    customMessage: {
+      label: "Custom Message",
+      placeholder: "Optional personalised message…",
+      type: "textarea",
+      required: false,
+      group: "secondary",
+    },
+  };
+
+  // ── Runtime state ─────────────────────────────────────────────
+  let detectedFields: string[] = [];
+  const certDefaults: Record<string, string> = {};
+
+  // ── Helpers ───────────────────────────────────────────────────
+  // Convert an unknown camelCase key to a readable label as fallback.
+  function toTitleLabel(key: string): string {
+    return key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase());
+  }
+
+  function appendField(
+    container: Element,
+    key: string,
+    def: FieldDef | undefined,
+  ) {
+    const wrapper = document.createElement("div");
+
+    const label = document.createElement("label");
+    label.className = "form-label";
+    label.htmlFor = key;
+    label.textContent = def?.label ?? toTitleLabel(key);
+    if (def?.required) {
+      const star = document.createElement("span");
+      star.className = "text-red-400";
+      star.textContent = " *";
+      label.appendChild(star);
+    }
+    wrapper.appendChild(label);
+
+    if (def?.type === "textarea") {
+      const ta = document.createElement("textarea");
+      ta.id = key;
+      ta.className = "form-input resize-none h-20";
+      ta.placeholder = def.placeholder;
+      wrapper.appendChild(ta);
+    } else {
+      const input = document.createElement("input");
+      input.id = key;
+      input.className = "form-input";
+      input.type = "text";
+      input.autocomplete = "off";
+      input.placeholder = def?.placeholder ?? toTitleLabel(key);
+      if (def?.defaultValue) input.value = def.defaultValue;
+      wrapper.appendChild(input);
+    }
+
+    container.appendChild(wrapper);
+  }
+
+  // ── Certificate ID generator ──────────────────────────────────
+  // Produces a deterministic ID from the recipient + award type
+  // using a 32-bit FNV-1a hash, formatted as MAST-YYYY-XXXXXX.
+  function generateCertId(recipient: string, instructor: string): string {
+    const year = new Date().getFullYear();
+    const seed = `${recipient.trim()}|${instructor.trim()}`.toLowerCase();
+    let h = 0x811c9dc5;
+    for (let i = 0; i < seed.length; i++) {
+      h ^= seed.charCodeAt(i);
+      h = Math.imul(h, 0x01000193) >>> 0;
+    }
+    const hex = h.toString(16).toUpperCase().padStart(8, "0").slice(0, 6);
+    return `MAST-${year}-${hex}`;
+  }
+
+  function refreshCertId() {
+    const recipient =
+      (
+        document.getElementById("recipientName") as HTMLInputElement | null
+      )?.value.trim() ?? "";
+    const instructor =
+      (
+        document.getElementById("issuerName") as HTMLInputElement | null
+      )?.value.trim() ?? "";
+    const id = generateCertId(recipient, instructor);
+    scaler.querySelectorAll("[data-cert-id]").forEach((el) => {
+      el.textContent = id;
+    });
+  }
+
+  // ── Build the form from detected cert fields ──────────────────
+  function buildForm() {
+    const container = document.getElementById("form-fields-container");
+    if (!container) return;
+
+    // Pick up brand defaults passed via data-* attributes
+    const defaultCompany = container.dataset.defaultCompany ?? "";
+    const defaultIssuerTitle = container.dataset.defaultIssuerTitle ?? "";
+    if (FIELD_REGISTRY.companyName) {
+      FIELD_REGISTRY.companyName.placeholder = defaultCompany;
+      FIELD_REGISTRY.companyName.defaultValue = defaultCompany;
+    }
+    if (FIELD_REGISTRY.issuerTitle) {
+      FIELD_REGISTRY.issuerTitle.placeholder = defaultIssuerTitle;
+      FIELD_REGISTRY.issuerTitle.defaultValue = defaultIssuerTitle;
+    }
+
+    // Scan the cert for every unique [data-field] value
+    const certFieldSet = new Set<string>();
+    scaler.querySelectorAll("[data-field]").forEach((el) => {
+      const f = (el as HTMLElement).dataset.field;
+      if (f) certFieldSet.add(f);
+    });
+
+    // Order by registry declaration order, then append any unknowns
+    const registryOrder = Object.keys(FIELD_REGISTRY);
+    const sorted = [
+      ...registryOrder.filter((k) => certFieldSet.has(k)),
+      ...[...certFieldSet].filter((k) => !registryOrder.includes(k)),
+    ];
+
+    // Capture placeholder text from the cert DOM as defaults (restored when input is cleared)
+    sorted.forEach((key) => {
+      const el = scaler.querySelector(`[data-field="${key}"]`);
+      if (el) certDefaults[key] = el.textContent?.trim() ?? "";
+    });
+
+    detectedFields = sorted;
+
+    // Split primary / secondary
+    const primary = sorted.filter(
+      (k) => (FIELD_REGISTRY[k]?.group ?? "primary") === "primary",
+    );
+    const secondary = sorted.filter(
+      (k) => FIELD_REGISTRY[k]?.group === "secondary",
+    );
+
+    const primaryContainer = container.querySelector("#primary-fields");
+    if (!primaryContainer) return;
+    // Rebuild container (keep the "Details" heading)
+    primaryContainer.innerHTML =
+      '<p class="text-xs uppercase tracking-widest text-slate-500">Details</p>';
+    primary.forEach((key) =>
+      appendField(primaryContainer, key, FIELD_REGISTRY[key]),
+    );
+
+    // Secondary fields — always visible, separated by a thin divider
+    if (secondary.length > 0) {
+      const secondaryContainer = container.querySelector("#secondary-fields");
+      if (!secondaryContainer) return;
+      secondaryContainer.innerHTML =
+        '<div class="text-xs uppercase tracking-widest text-slate-500">Additional</div>';
+
+      secondary.forEach((key) =>
+        appendField(secondaryContainer, key, FIELD_REGISTRY[key]),
+      );
+    }
+
+    // Wire up live-update listeners
+    detectedFields.forEach((key) => {
+      document.getElementById(key)?.addEventListener("input", updateCert);
+    });
+  }
+
+  // ── Live-update cert from form inputs ─────────────────────────
+  function updateCert() {
+    detectedFields.forEach((key) => {
+      const input = document.getElementById(key) as
+        | HTMLInputElement
+        | HTMLTextAreaElement
+        | null;
+      const targets = scaler.querySelectorAll(`[data-field="${key}"]`);
+      if (!input || !targets.length) return;
+      const val = input.value.trim();
+      targets.forEach((el) => {
+        el.textContent = val || certDefaults[key] || "";
+      });
+    });
+  }
+
+  // ── Initialise on load ────────────────────────────────────────
+  window.addEventListener("DOMContentLoaded", () => {
+    buildForm();
+
+    // Pre-fill today's date if the cert has a date field
+    const dateInput = document.getElementById(
+      "date",
+    ) as HTMLInputElement | null;
+    if (dateInput && !dateInput.value) {
+      dateInput.value = new Date().toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+      updateCert();
+    }
+
+    // Auto-generate cert ID and refresh whenever either name changes
+    refreshCertId();
+    document
+      .getElementById("recipientName")
+      ?.addEventListener("input", refreshCertId);
+    document
+      .getElementById("issuerName")
+      ?.addEventListener("input", refreshCertId);
+
+    fitPreview();
+  });
+
+  // ── Zoom / fit ────────────────────────────────────────────────
+  const outer = document.getElementById("preview-outer") as HTMLElement;
+  const zoomLabel = document.getElementById("zoom-label") as HTMLElement;
+  let currentZoom = 1;
+  let manualZoom = false;
+
+  function applyZoom(scale: number) {
+    currentZoom = scale;
+    scaler.style.transform = `scale(${scale})`;
+  }
+
+  function fitPreview() {
+    const pw = outer.clientWidth - 64;
+    const ph = outer.clientHeight - 64;
+    const scale = Math.min(pw / certW, ph / certH, 1);
+    applyZoom(scale);
+    zoomLabel.textContent = "Fit";
+  }
+
+  document.getElementById("btn-zoom-in")!.addEventListener("click", () => {
+    manualZoom = true;
+    applyZoom(Math.min(currentZoom + 0.1, 1.5));
+    zoomLabel.textContent = Math.round(currentZoom * 100) + "%";
+  });
+  document.getElementById("btn-zoom-out")!.addEventListener("click", () => {
+    manualZoom = true;
+    applyZoom(Math.max(currentZoom - 0.1, 0.15));
+    zoomLabel.textContent = Math.round(currentZoom * 100) + "%";
+  });
+  document.getElementById("btn-zoom-fit")!.addEventListener("click", () => {
+    manualZoom = false;
+    fitPreview();
+  });
+  window.addEventListener("resize", () => {
+    if (!manualZoom) fitPreview();
+  });
+
+  // ── Download PDF ──────────────────────────────────────────────
+  document
+    .getElementById("btn-download")!
+    .addEventListener("click", async () => {
+      const btn = document.getElementById("btn-download") as HTMLButtonElement;
+      const originalHTML = btn.innerHTML;
+
+      btn.disabled = true;
+      btn.innerHTML = `
+      <svg class="w-4 h-4 shrink-0 animate-spin" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+      </svg>
+      Generating…`;
+
+      try {
+        const certEl = scaler.firstElementChild as HTMLElement | null;
+        if (!certEl) throw new Error("Certificate element not found.");
+
+        const dataUrl = await toPng(certEl, {
+          pixelRatio: 2,
+          width: certW,
+          height: certH,
+        });
+
+        const isPortrait = orientation === "portrait";
+        const pdf = new jsPDF({
+          orientation: isPortrait ? "portrait" : "landscape",
+          unit: "mm",
+          format: "a4",
+          compress: true,
+        });
+
+        const pageW = isPortrait ? 210 : 297;
+        const pageH = isPortrait ? 297 : 210;
+        pdf.addImage(dataUrl, "PNG", 0, 0, pageW, pageH);
+
+        const nameInput = document.getElementById(
+          "recipientName",
+        ) as HTMLInputElement | null;
+        const nameVal = nameInput?.value?.trim();
+        const safeName = nameVal
+          ? nameVal
+              .toLowerCase()
+              .replace(/[^a-z0-9]+/g, "-")
+              .replace(/(^-|-$)/g, "")
+          : "certificate";
+        pdf.save(`${safeName}-certificate.pdf`);
+      } catch (err) {
+        console.error("[PDF]", err);
+        alert(
+          "PDF generation failed — please try again.\n\n" +
+            (err as Error).message,
+        );
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalHTML;
+      }
+    });
+</script>

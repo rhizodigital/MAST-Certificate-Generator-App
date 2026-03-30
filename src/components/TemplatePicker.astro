@@ -1,0 +1,34 @@
+---
+/**
+ * TemplatePicker — sidebar grid of available certificate templates.
+ * Highlights the currently active template and links to each one.
+ */
+import type { TemplateMeta } from '../certificate-templates/index';
+
+interface Props {
+  templates: TemplateMeta[];
+  activeId:  string;
+}
+
+const { templates, activeId } = Astro.props;
+---
+<div class="px-4 pt-4 pb-3 border-b border-slate-800">
+  <p class="text-xs uppercase tracking-widest text-slate-500 mb-3">Style</p>
+  <nav class="grid grid-cols-2 gap-2" aria-label="Certificate templates">
+    {templates.map((t) => (
+      <a
+        href={`/certificates/${t.id}`}
+        class:list={[
+          'block p-2.5 rounded-lg border transition-all duration-150 no-underline',
+          t.id === activeId
+            ? 'border-indigo-500 bg-indigo-500/10 ring-1 ring-indigo-500/30'
+            : 'border-slate-700 bg-slate-800 hover:border-indigo-400 hover:bg-slate-800/80',
+        ]}
+        aria-current={t.id === activeId ? 'page' : undefined}
+      >
+        <span class="text-xl block mb-1">{t.emoji}</span>
+        <span class="text-xs font-medium text-slate-300 leading-snug block">{t.name}</span>
+      </a>
+    ))}
+  </nav>
+</div>

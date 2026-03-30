@@ -1,0 +1,203 @@
+---
+/**
+ * MAST Classic — Clean formal white certificate.
+ * Navy header bar with gold accent, white body.
+ * Best for monthly awards, course completions, team recognition.
+ * A4 Landscape.
+ *
+ * Fields:
+ *  recipientName  → recipient's full name
+ *  awardType      → award title (e.g. "Employee of the Month")
+ *  date           → date awarded
+ *  issuerName     → left signatory name
+ *  issuerTitle    → left signatory title
+ *  issuer2Name    → right signatory name
+ *  issuer2Title   → right signatory title
+ *  customMessage  → optional citation / body text
+ */
+import CertificateLayout from "../../layouts/CertificateLayout.astro";
+import DividerLine from "../../certificate-templates/certificate-components/DividerLine.astro";
+import BorderFrame from "../../certificate-templates/certificate-components/BorderFrame.astro";
+import MastLogoWhite from "../../assets/MastLogoWhite.svg";
+import MastLogo from "../../assets/MastLogo.svg";
+---
+
+<CertificateLayout templateId="mast-classic" orientation="landscape">
+  <div
+    class="cert cert-classic relative overflow-hidden w-280.5 h-198.5 bg-white flex flex-col"
+    id="cert-canvas"
+  >
+    <!-- ── Navy top header bar ───────────────────────────────── -->
+    <header
+      class="flex items-center justify-between px-10 shrink-0 bg-mast-navy"
+      style="height: 18%;"
+    >
+      <!-- Logo (white on navy) -->
+      <MastLogoWhite class="h-18 w-auto logo-white" />
+
+      <!-- Right: "MAST Security LTD" text -->
+      <div class="flex flex-col items-end gap-0.5">
+        <p
+          class="m-0 font-sans font-bold uppercase tracking-[0.28em] text-white"
+          style="font-size:0.72rem;"
+        >
+          MAST Security
+        </p>
+        <p
+          class="m-0 font-sans font-medium uppercase tracking-[0.22em] text-mast-gold"
+          style="font-size:0.6rem;"
+        >
+          Maritime Asset Security & Training
+        </p>
+      </div>
+    </header>
+
+    <!-- Gold accent line under header -->
+    <div class="shrink-0 h-[5px] bg-mast-gold" aria-hidden="true"></div>
+
+    <!-- ── Main content ──────────────────────────────────────── -->
+    <div
+      class="relative flex-1 flex flex-col items-center justify-center gap-5 text-center px-20 py-6"
+    >
+      <!-- Faint navy side rules -->
+      <div
+        class="absolute top-0 bottom-0 left-7 w-[1.5px] bg-mast-navy/10 pointer-events-none"
+        aria-hidden="true"></div>
+      <div
+        class="absolute top-0 bottom-0 right-7 w-[1.5px] bg-mast-navy/10 pointer-events-none"
+        aria-hidden="true"></div>
+
+      <!-- Heading -->
+      <div class="flex flex-col items-center gap-2.5">
+        <p
+          class="m-0 font-sans font-medium uppercase tracking-[0.4em] text-mast-muted leading-none"
+          style="font-size:0.68rem;"
+        >
+          Certificate of
+        </p>
+        <h1
+          class="m-0 font-sans text-[46px] font-bold tracking-[0.08em] uppercase leading-none text-mast-navy"
+        >
+          Recognition
+        </h1>
+        <div class="w-24 h-[3px] bg-mast-gold mt-0.5" aria-hidden="true"></div>
+      </div>
+
+      <!-- Award type -->
+      <p
+        class="m-0 font-sans font-bold uppercase tracking-[0.18em] text-mast-navy-mid leading-none"
+        style="font-size:0.78rem;"
+        data-field="awardType">Award Type</p
+      >
+
+      <!-- Recipient -->
+      <div class="flex flex-col items-center gap-2">
+        <p
+          class="m-0 font-sans font-medium uppercase tracking-[0.28em] text-mast-muted leading-none"
+          style="font-size:0.68rem;"
+        >
+          This certificate is presented to
+        </p>
+        <h2
+          class="m-0 font-serif text-[56px] italic font-normal leading-[1.05] text-mast-navy"
+          data-field="recipientName">Recipient Name</h2
+        >
+        <p
+          class="cert-classic-message m-0 font-sans text-mast-muted max-w-[600px] leading-[1.65] mt-1"
+          style="font-size:0.72rem;"
+          data-field="customMessage"></p>
+      </div>
+
+      <!-- Divider -->
+      <DividerLine
+        color="var(--color-mast-navy)"
+        class="w-[500px] opacity-20"
+        variant="line"
+      />
+
+      <!-- Signatures -->
+      <div class="flex justify-around items-end w-full max-w-[780px]">
+        <!-- Signatory 1 -->
+        <div class="flex flex-col items-center gap-1.5 min-w-[190px]">
+          <p
+            class="m-0 font-signature text-2xl leading-none text-mast-navy"
+            data-field="issuerName">Signatory Name</p
+          >
+          <DividerLine
+            color="var(--color-mast-navy)"
+            class="w-20 opacity-40"
+            variant="line"
+          />
+          <p
+            class="m-0 font-sans font-medium uppercase tracking-[0.22em] text-mast-muted"
+            style="font-size:0.6rem;"
+            data-field="issuerTitle">Director of Security</p
+          >
+        </div>
+
+        <!-- Centre: Date + Cert ID -->
+        <div class="flex flex-col items-center gap-1">
+          <p class="m-0 font-serif text-[18px] text-mast-navy" data-field="date"
+            >Date</p
+          >
+          <p
+            class="m-0 font-sans font-medium uppercase tracking-[0.22em] text-mast-muted"
+            style="font-size:0.6rem;">Date Awarded</p
+          >
+          <p
+            class="m-0 font-sans font-medium uppercase tracking-[0.14em] text-mast-muted/50 mt-1"
+            style="font-size:0.55rem;"
+          >
+            Cert. ID <span data-cert-id class="text-mast-muted/70"
+              >MAST-2026-000000</span
+            >
+          </p>
+        </div>
+
+        <!-- Signatory 2 -->
+        <div class="flex flex-col items-center gap-1.5 min-w-[190px]">
+          <p
+            class="m-0 font-signature text-2xl leading-none text-mast-navy"
+            data-field="issuer2Name">Signatory Name</p
+          >
+          <DividerLine
+            color="var(--color-mast-navy)"
+            class="w-20 opacity-40"
+            variant="line"
+          />
+          <p
+            class="m-0 font-sans font-medium uppercase tracking-[0.22em] text-mast-muted"
+            style="font-size:0.6rem;"
+            data-field="issuer2Title">Chief Executive Officer</p
+          >
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Footer bar ────────────────────────────────────────── -->
+    <footer
+      class="flex items-center justify-between px-10 shrink-0 bg-mast-navy"
+      style="height: 8%;"
+    >
+      <p
+        class="m-0 font-sans font-medium uppercase tracking-[0.22em] text-white/50 leading-none"
+        style="font-size:0.6rem;"
+      >
+        mast-security.com
+      </p>
+      <div class="h-[2px] w-8 bg-mast-gold opacity-60" aria-hidden="true"></div>
+      <p
+        class="m-0 font-sans font-medium uppercase tracking-[0.22em] text-white/50 leading-none"
+        style="font-size:0.6rem;"
+      >
+        MAST Security LTD
+      </p>
+    </footer>
+  </div>
+</CertificateLayout>
+
+<style is:global>
+  .cert-classic .cert-classic-message:empty {
+    display: none;
+  }
+</style>

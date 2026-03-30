@@ -1,0 +1,26 @@
+---
+/**
+ * AppHeader — shared top navigation bar.
+ * Shows company logo (or initial) and a sign-out link.
+ * Used by Layout.astro and CertificateLayout.astro.
+ */
+import { brand } from "../config/brand";
+import MastLogoWhite from "../assets/MastLogoWhite.svg";
+---
+
+<header
+  class="shrink-0 flex items-center justify-between px-5 py-3 bg-slate-900 border-b border-slate-800"
+>
+  <div class="flex items-center gap-3">
+    <MastLogoWhite class="h-10 w-auto logo-white" />
+    <div class="w-px h-5 bg-slate-700" aria-hidden="true"></div>
+    <p class="text-xs text-slate-400 tracking-wide">{brand.companyName}</p>
+  </div>
+
+  <a
+    href="/logout"
+    class="text-xs text-slate-400 hover:text-slate-200 transition-colors px-3 py-1.5 rounded-md hover:bg-slate-800"
+  >
+    Sign out
+  </a>
+</header>

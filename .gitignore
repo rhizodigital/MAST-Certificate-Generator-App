@@ -1,0 +1,37 @@
+# ── Dependencies ──────────────────────────────────────────────
+node_modules/
+.pnp
+.pnp.js
+
+# ── Build output ───────────────────────────────────────────────
+dist/
+.astro/
+
+# ── Environment / secrets ──────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Netlify ────────────────────────────────────────────────────
+.netlify/
+netlify/functions/
+
+# ── OS & editor junk ──────────────────────────────────────────
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo
+.idea/
+.vscode/
+*.code-workspace
+
+# ── Logs ───────────────────────────────────────────────────────
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# ── Type cache ─────────────────────────────────────────────────
+*.tsbuildinfo

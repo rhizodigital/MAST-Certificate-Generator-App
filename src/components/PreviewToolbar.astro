@@ -1,0 +1,45 @@
+---
+/**
+ * PreviewToolbar — top bar of the certificate preview panel.
+ *
+ * Shows the orientation badge and zoom controls.
+ * Zoom button IDs (btn-zoom-in, btn-zoom-out, btn-zoom-fit, zoom-label)
+ * are read by the client script in CertificateLayout.astro.
+ */
+interface Props {
+  orientation: 'landscape' | 'portrait';
+}
+
+const { orientation } = Astro.props;
+---
+<div class="flex items-center justify-between px-5 py-2.5 bg-slate-900 border-b border-slate-800 shrink-0">
+  <div class="flex items-center gap-2">
+    <span class="text-xs text-slate-500 font-medium">Preview</span>
+    <span class="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 font-mono">
+      {orientation === 'portrait' ? 'A4 Portrait' : 'A4 Landscape'}
+    </span>
+  </div>
+
+  <div class="flex items-center gap-1">
+    <button id="btn-zoom-out"
+            class="p-1.5 rounded hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
+            title="Zoom out">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>
+      </svg>
+    </button>
+    <span id="zoom-label"
+          class="text-xs text-slate-400 font-mono w-10 text-center select-none">Fit</span>
+    <button id="btn-zoom-in"
+            class="p-1.5 rounded hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
+            title="Zoom in">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+      </svg>
+    </button>
+    <button id="btn-zoom-fit"
+            class="ml-1 px-2 py-1 rounded text-xs text-slate-400 hover:bg-slate-700 hover:text-white transition-colors font-medium">
+      Fit
+    </button>
+  </div>
+</div>

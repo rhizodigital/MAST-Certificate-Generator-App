@@ -1,0 +1,127 @@
+/* ════════════════════════════════════════════════════════════
+   Certificate App — Global Styles
+   Tailwind CSS v4 (CSS-first, no tailwind.config.js needed)
+   MAST Security LTD colour palette
+   ════════════════════════════════════════════════════════════ */
+
+@import "tailwindcss";
+
+@theme {
+
+  /* ── Typography ───────────────────────────────────────────── */
+  --font-sans:      "IBM Plex Sans Variable", system-ui, -apple-system, sans-serif;
+  --font-serif:     "PT Serif", Georgia, serif;
+  --font-mono:      "JetBrains Mono", "Fira Code", monospace;
+  --font-signature: "Dancing Script", cursive;
+
+  /* ── Brand (app chrome accent: buttons, active states) ────── */
+  --color-brand-50:  #faf7f0;
+  --color-brand-100: #f0e8d4;
+  --color-brand-200: #e0cfa8;
+  --color-brand-300: #ccb27a;
+  --color-brand-400: #c0a660;
+  --color-brand-500: #b39a61;   /* MAST gold */
+  --color-brand-600: #957f4e;
+  --color-brand-700: #7a6840;
+  --color-brand-800: #5e5030;
+  --color-brand-900: #433920;
+
+  /* ── MAST Security certificate colours ─────────────────────
+     Used as Tailwind utilities in template files — e.g.
+     text-mast-gold, bg-mast-navy, border-mast-steel.          */
+
+  /* Core palette */
+  --color-mast-gold:         #B39A61;   /* Primary gold accent */
+  --color-mast-gold-dark:    #8a7245;   /* Deep gold for borders */
+  --color-mast-gold-pale:    #f5f0e8;   /* Very light gold tint */
+  --color-mast-gold-dim:     #9a8252;   /* Subdued gold text on dark */
+  --color-mast-gold-muted:   #7a6840;   /* Further muted gold */
+  --color-mast-gold-shadow:  #c8b48a;   /* Light gold on dark bg */
+
+  --color-mast-navy:         #0E1D39;   /* Very dark navy (primary bg) */
+  --color-mast-navy-dark:    #08111f;   /* Deepest navy */
+  --color-mast-navy-mid:     #2D4B75;   /* Medium navy blue */
+  --color-mast-navy-light:   #3d5f8a;   /* Lighter navy */
+
+  --color-mast-steel:        #7B9FBA;   /* Steel blue (accent) */
+  --color-mast-steel-pale:   #b8cfe0;   /* Light steel */
+
+  --color-mast-light:        #F1F5F9;   /* Near-white background */
+  --color-mast-cream:        #faf7f0;   /* Warm off-white */
+  --color-mast-cream-dark:   #ede8de;   /* Darker cream */
+
+  --color-mast-muted:        #6b7a8d;   /* Muted text */
+  --color-mast-parchment:    #e8dfc8;   /* Parchment / pale gold text */
+  --color-mast-white:        #ffffff;
+}
+
+/* ── Sidebar form controls ────────────────────────────────────
+   Defined here (not in CertificateLayout) so they apply to
+   inputs that are created dynamically by JavaScript.          */
+
+.form-label {
+  @apply text-xs text-slate-500 mb-1;
+}
+
+.form-input {
+  @apply bg-slate-800 border border-slate-700 text-slate-200 rounded-md px-3 py-2 text-sm w-full focus:ring-2 focus:ring-offset-0 focus:ring-brand-500 focus:border-brand-500;
+}
+
+.form-input:focus        { border-color: var(--color-mast-gold); box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-mast-gold) 18%, transparent); }
+.form-input::placeholder { color: var(--color-slate-400); }
+
+#sidebar ::-webkit-scrollbar       { width: 5px; }
+#sidebar ::-webkit-scrollbar-track { background: transparent; }
+#sidebar ::-webkit-scrollbar-thumb { background: var(--color-slate-700); border-radius: 3px; }
+
+/* ── Certificate background gradients ─────────────────────────
+   Named classes so templates contain no hardcoded hex values.  */
+
+.bg-cert-prestige {
+  /* Deep navy vignette — lighter centre, very dark edges */
+  background:
+    radial-gradient(ellipse 110% 90% at 50% 42%,
+      color-mix(in srgb, var(--color-mast-navy) 85%, white) 0%,
+      var(--color-mast-navy-dark) 72%);
+}
+
+.bg-cert-recognition-header {
+  background: linear-gradient(160deg, var(--color-mast-navy-mid) 0%, var(--color-mast-navy) 45%, var(--color-mast-navy-dark) 100%);
+}
+
+.bg-cert-classic {
+  background: linear-gradient(145deg, var(--color-mast-light) 0%, #ffffff 50%, var(--color-mast-light) 100%);
+}
+
+.bg-cert-warm {
+  background: linear-gradient(145deg, var(--color-mast-cream-dark) 0%, var(--color-mast-cream) 48%, var(--color-mast-cream-dark) 100%);
+}
+
+/* ── Radial glow overlays ─────────────────────────────────── */
+
+.bg-cert-prestige-glow {
+  background: radial-gradient(ellipse 65% 55% at 50% 50%, color-mix(in srgb, var(--color-mast-gold) 8%, transparent) 0%, transparent 68%);
+}
+
+.bg-cert-header-glow {
+  background: radial-gradient(ellipse 80% 70% at 30% 50%, color-mix(in srgb, var(--color-mast-navy-mid) 40%, transparent) 0%, transparent 70%);
+}
+
+/* ── Text shadow utilities ────────────────────────────────── */
+
+@layer utilities {
+  .text-shadow-gold-glow {
+    text-shadow: 0 0 36px color-mix(in srgb, var(--color-mast-gold) 22%, transparent);
+  }
+  .text-shadow-navy-soft {
+    text-shadow: 0 1px 3px color-mix(in srgb, var(--color-mast-navy) 10%, transparent);
+  }
+  /* Tints a dark logo to gold tone for dark prestige backgrounds. */
+  .logo-gold {
+    filter: brightness(0) invert(1) sepia(1) saturate(2) hue-rotate(5deg) brightness(0.85);
+  }
+  /* Pure white logo for dark navy backgrounds */
+  .logo-white {
+    filter: brightness(0) invert(1);
+  }
+}

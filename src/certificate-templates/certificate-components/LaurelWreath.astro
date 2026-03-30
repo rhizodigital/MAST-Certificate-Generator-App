@@ -1,0 +1,52 @@
+---
+/**
+ * LaurelWreath — symmetric laurel / leaf wreath SVG.
+ * Typically placed above the signature row.
+ */
+interface Props {
+  color?:  string;
+  width?:  number;
+  height?: number;
+  class?:  string;
+}
+
+const {
+  color  = 'var(--cert-primary)',
+  width  = 220,
+  height = 60,
+  class: cls = '',
+} = Astro.props;
+---
+
+<svg
+  width={width}
+  height={height}
+  viewBox="0 0 220 60"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  class={cls}
+  aria-hidden="true"
+>
+  <!-- Left branch — 6 leaves -->
+  <path d="M10 30 Q20 20 30 25 Q20 30 10 30Z"  fill={color} opacity="0.85" />
+  <path d="M18 24 Q30 12 42 18 Q30 26 18 24Z"  fill={color} opacity="0.85" />
+  <path d="M30 18 Q44  8 56 14 Q44 22 30 18Z"  fill={color} opacity="0.85" />
+  <path d="M44 14 Q58  6 70 12 Q58 20 44 14Z"  fill={color} opacity="0.85" />
+  <path d="M58 12 Q72  5 84 10 Q72 18 58 12Z"  fill={color} opacity="0.85" />
+  <path d="M72 11 Q84  5 94  9 Q85 16 72 11Z"  fill={color} opacity="0.85" />
+  <!-- Left stem -->
+  <path d="M10 30 Q52 35 110 32" stroke={color} stroke-width="1.5" fill="none" />
+
+  <!-- Right branch — mirror of left -->
+  <path d="M210 30 Q200 20 190 25 Q200 30 210 30Z"  fill={color} opacity="0.85" />
+  <path d="M202 24 Q190 12 178 18 Q190 26 202 24Z"  fill={color} opacity="0.85" />
+  <path d="M190 18 Q176  8 164 14 Q176 22 190 18Z"  fill={color} opacity="0.85" />
+  <path d="M176 14 Q162  6 150 12 Q162 20 176 14Z"  fill={color} opacity="0.85" />
+  <path d="M162 12 Q148  5 136 10 Q148 18 162 12Z"  fill={color} opacity="0.85" />
+  <path d="M148 11 Q136  5 126  9 Q135 16 148 11Z"  fill={color} opacity="0.85" />
+  <!-- Right stem -->
+  <path d="M210 30 Q168 35 110 32" stroke={color} stroke-width="1.5" fill="none" />
+
+  <!-- Centre dot -->
+  <circle cx="110" cy="32" r="4" fill={color} />
+</svg>

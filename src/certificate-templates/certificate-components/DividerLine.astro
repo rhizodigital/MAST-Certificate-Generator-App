@@ -1,0 +1,103 @@
+---
+/**
+ * DividerLine — horizontal section separator for certificate templates.
+ *
+ * Variants
+ * ─────────────────────────────────────────────────────────────────────
+ *  diamond         outline rotated square centred on the line (default)
+ *  diamond-filled  outline diamond with a filled inner diamond
+ *  dots            three dots, centre one larger
+ *  line            plain rule with no ornament
+ *
+ * Stroke weights apply to both the line arms and the ornament.
+ *  thin  1px line, small ornament
+ *  med   1.5px line, medium ornament (default)
+ *  fat   2px line, larger ornament
+ *
+ * Width
+ * ─────
+ * Defaults to w-full. Pass any Tailwind width class via `class` to constrain,
+ * e.g. class="w-[380px]" or class="w-2/3".
+ *
+ * Color
+ * ─────
+ * Accepts any CSS colour string including var(--token) references.
+ * Set once on the root via a CSS custom property; all children inherit it.
+ */
+interface Props {
+  variant?: 'diamond' | 'diamond-filled' | 'dots' | 'line';
+  stroke?:  'thin' | 'med' | 'fat';
+  color?:   string;
+  class?:   string;
+}
+
+const {
+  variant          = 'diamond',
+  stroke           = 'med',
+  color            = 'currentColor',
+  class: className = '',
+} = Astro.props;
+
+// ── Line arm thickness ───────────────────────────────────────
+const lineWeight = {
+  thin: 'border-t',
+  med:  'border-t-[1.5px]',
+  fat:  'border-t-2',
+}[stroke];
+
+// ── Diamond bounding box (rotate-45 makes the visual diamond ≈ size × √2 wide)
+const diamondBox = {
+  thin: 'w-2.5 h-2.5',
+  med:  'w-3   h-3',
+  fat:  'w-4   h-4',
+}[stroke];
+
+// ── Inner filled square inset (for diamond-filled variant) ───
+const diamondInset = {
+  thin: 'inset-[2.5px]',
+  med:  'inset-[3px]',
+  fat:  'inset-[3.5px]',
+}[stroke];
+
+// ── Dot sizes ────────────────────────────────────────────────
+const dotSide   = { thin: 'size-1',   med: 'size-1.5', fat: 'size-2'   }[stroke];
+const dotCenter = { thin: 'size-1.5', med: 'size-2.5', fat: 'size-3.5' }[stroke];
+const dotGap    = { thin: 'gap-1.5',  med: 'gap-2',    fat: 'gap-2.5'  }[stroke];
+---
+
+<div
+  class:list={['flex items-center', className || 'w-full']}
+  style={`--dc:${color}`}
+  aria-hidden="true"
+>
+  <!-- Line only -->
+  {variant === 'line' && (
+    <div class:list={['flex-1', lineWeight, '[border-color:var(--dc)]']}></div>
+  )}
+
+  <!-- Diamond (outline) or Diamond filled -->
+  {(variant === 'diamond' || variant === 'diamond-filled') && (
+    <>
+      <div class:list={['flex-1', lineWeight, '[border-color:var(--dc)]']}></div>
+      <div class:list={['relative mx-2 rotate-45 shrink-0 border [border-color:var(--dc)]', diamondBox]}>
+        {variant === 'diamond-filled' && (
+          <div class:list={['absolute [background:var(--dc)]', diamondInset]}></div>
+        )}
+      </div>
+      <div class:list={['flex-1', lineWeight, '[border-color:var(--dc)]']}></div>
+    </>
+  )}
+
+  <!-- Three dots, centre one larger -->
+  {variant === 'dots' && (
+    <>
+      <div class:list={['flex-1', lineWeight, '[border-color:var(--dc)]']}></div>
+      <div class:list={['flex items-center mx-3', dotGap]}>
+        <div class:list={['rounded-full [background:var(--dc)]', dotSide]}></div>
+        <div class:list={['rounded-full [background:var(--dc)]', dotCenter]}></div>
+        <div class:list={['rounded-full [background:var(--dc)]', dotSide]}></div>
+      </div>
+      <div class:list={['flex-1', lineWeight, '[border-color:var(--dc)]']}></div>
+    </>
+  )}
+</div>

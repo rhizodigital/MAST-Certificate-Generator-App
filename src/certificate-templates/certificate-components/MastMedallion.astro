@@ -1,0 +1,262 @@
+---
+/**
+ * MastMedallion — Realistic gold certificate seal.
+ *
+ * - MAST logo engraved in the centre
+ * - Text runs all the way around both arcs
+ * - Coin-style radial gradient + tick-mark rim
+ * - No ribbon. No date. Just the seal.
+ *
+ * Props:
+ *  size   – diameter in px (default 150)
+ *  class  – extra CSS classes
+ */
+import mastLogoRaw from "../../assets/MastLogo.svg?raw";
+
+interface Props {
+  size?: number;
+  class?: string;
+}
+const { size = 150, class: className = "" } = Astro.props;
+
+const cx = size / 2;
+const cy = size / 2;
+
+// ── Parse logo SVG ────────────────────────────────────────────
+const vbMatch  = mastLogoRaw.match(/viewBox="([^"]+)"/);
+const vbParts  = vbMatch ? vbMatch[1].trim().split(/\s+/).map(Number) : [0, 0, 229.79, 180];
+const logoNatW = vbParts[2];   // 229.79
+const logoNatH = vbParts[3];   // 180
+
+// Replace the CSS class fill with a darker engraved colour and rename
+// to avoid conflicts if multiple SVGs are on the page.
+const logoInner = mastLogoRaw
+  .replace(/<svg\b[^>]*>/i, "")
+  .replace(/<\/svg>\s*$/i, "")
+  .replace(/\.cls-1\s*\{[^}]*\}/g, ".mast-seal-ink { fill: #1c1408 }")
+  .replace(/class="cls-1"/g, 'class="mast-seal-ink"');
+
+// ── Geometry ──────────────────────────────────────────────────
+// Each radius is a fraction of `size` so the seal scales cleanly.
+const rShadow      = size * 0.479;  // soft drop-shadow circle
+const rRim         = size * 0.471;  // outer bevel rim
+const rTickOuter   = size * 0.460;  // tick mark outer end
+const rTickMinor   = size * 0.440;  // minor tick inner end
+const rTickMajor   = size * 0.426;  // major tick inner end  (every 6th)
+const rRingOuter   = size * 0.420;  // gold text-ring outer edge
+const rText        = size * 0.388;  // text-path baseline
+const rRingInner   = size * 0.352;  // gold text-ring inner edge (= separator)
+const rFace        = size * 0.340;  // coin face outer
+const rDecoOuter   = size * 0.300;  // inner deco ring outer
+const rDecoInner   = size * 0.287;  // inner deco ring inner  (logo clears this)
+
+// Logo: fill 85 % of the inner deco diameter
+const logoW     = rDecoInner * 1.70;
+const logoH     = (logoW / logoNatW) * logoNatH;
+const logoScale = logoW / logoNatW;
+const logoX     = cx - logoW / 2;
+const logoY     = cy - logoH / 2;
+
+// ── Tick marks (72 marks; every 6th is major) ─────────────────
+const NUM_TICKS = 72;
+const ticks = Array.from({ length: NUM_TICKS }, (_, i) => {
+  const angle = (i / NUM_TICKS) * Math.PI * 2 - Math.PI / 2;
+  const major = i % 6 === 0;
+  const rInner = major ? rTickMajor : rTickMinor;
+  return {
+    x1: cx + rTickOuter * Math.cos(angle),
+    y1: cy + rTickOuter * Math.sin(angle),
+    x2: cx + rInner     * Math.cos(angle),
+    y2: cy + rInner     * Math.sin(angle),
+    major,
+  };
+});
+
+// ── Circular text paths ───────────────────────────────────────
+// Top arc  : left point → clockwise through 12 o'clock → right point
+// Bottom arc: right point → clockwise through 6 o'clock → left point
+// Both use startOffset="50%" + text-anchor="middle" so the text
+// is centred at the crown / base of the circle respectively.
+const topArc = `M ${cx - rText},${cy} A ${rText},${rText} 0 0,1 ${cx + rText},${cy}`;
+const botArc = `M ${cx + rText},${cy} A ${rText},${rText} 0 0,1 ${cx - rText},${cy}`;
+
+// Font size: conservative so "MARITIME ASSET SECURITY AND TRAINING"
+// (36 chars) fits the upper semicircle (arc ≈ π·rText).
+const fs  = size * 0.048;
+const lsT = size * 0.0018;   // tighter letter-spacing for long top text
+const lsB = size * 0.016;    // wider for shorter bottom text (fills arc)
+
+// Unique IDs so multiple seals on one page don't collide.
+const uid  = `ms${Math.round(size)}`;
+const idTF = `${uid}-top-arc`;
+const idBF = `${uid}-bot-arc`;
+const idCG = `${uid}-coin-grad`;
+const idRG = `${uid}-rim-grad`;
+const idTG = `${uid}-ring-grad`;
+const idSH = `${uid}-shadow`;
+const idCC = `${uid}-clip`;
+---
+
+<svg
+  width={size}
+  height={size}
+  viewBox={`0 0 ${size} ${size}`}
+  xmlns="http://www.w3.org/2000/svg"
+  class={className}
+  aria-hidden="true"
+>
+  <defs>
+
+    <!-- ── Drop shadow ──────────────────────────────────────── -->
+    <filter id={idSH} x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow
+        dx="0" dy={size * 0.02}
+        stdDeviation={size * 0.028}
+        flood-color="#3a2008"
+        flood-opacity="0.50"
+      />
+    </filter>
+
+    <!-- ── Coin face: spherical highlight top-left → dark rim ── -->
+    <radialGradient id={idCG} cx="36%" cy="30%" r="72%">
+      <stop offset="0%"   stop-color="#f5e090"/>
+      <stop offset="28%"  stop-color="#ddb858"/>
+      <stop offset="62%"  stop-color="#b08030"/>
+      <stop offset="100%" stop-color="#7a5518"/>
+    </radialGradient>
+
+    <!-- ── Outer bevel rim ──────────────────────────────────── -->
+    <radialGradient id={idRG} cx="38%" cy="32%" r="72%">
+      <stop offset="0%"   stop-color="#d0a840"/>
+      <stop offset="50%"  stop-color="#9a7428"/>
+      <stop offset="100%" stop-color="#5e3e0e"/>
+    </radialGradient>
+
+    <!-- ── Text / tick ring ─────────────────────────────────── -->
+    <radialGradient id={idTG} cx="38%" cy="32%" r="72%">
+      <stop offset="0%"   stop-color="#c8a040"/>
+      <stop offset="55%"  stop-color="#9a7828"/>
+      <stop offset="100%" stop-color="#6a5018"/>
+    </radialGradient>
+
+    <!-- Clip path for logo so it stays inside the deco ring -->
+    <clipPath id={idCC}>
+      <circle cx={cx} cy={cy} r={rDecoInner - size * 0.01}/>
+    </clipPath>
+
+    <!-- Text arc paths (invisible guides) -->
+    <path id={idTF} d={topArc} fill="none"/>
+    <path id={idBF} d={botArc} fill="none"/>
+
+  </defs>
+
+  <!-- ── 1. Shadow ─────────────────────────────────────────── -->
+  <circle
+    cx={cx} cy={cy} r={rShadow}
+    fill="#5a3a10"
+    filter={`url(#${idSH})`}
+    opacity="0.5"
+  />
+
+  <!-- ── 2. Outer bevel rim ────────────────────────────────── -->
+  <circle cx={cx} cy={cy} r={rRim} fill={`url(#${idRG})`}/>
+
+  <!-- Fine edge line -->
+  <circle
+    cx={cx} cy={cy} r={rRim}
+    fill="none" stroke="#3a2808"
+    stroke-width={size * 0.005}
+  />
+
+  <!-- ── 3. Tick marks ─────────────────────────────────────── -->
+  {ticks.map(t => (
+    <line
+      x1={t.x1} y1={t.y1}
+      x2={t.x2} y2={t.y2}
+      stroke={t.major ? "#3a2408" : "#5a3e18"}
+      stroke-width={t.major ? size * 0.013 : size * 0.007}
+      stroke-linecap="round"
+    />
+  ))}
+
+  <!-- ── 4. Text ring ──────────────────────────────────────── -->
+  <circle cx={cx} cy={cy} r={rRingOuter} fill={`url(#${idTG})`}/>
+
+  <!-- Thin inner border of text ring -->
+  <circle
+    cx={cx} cy={cy} r={rRingInner}
+    fill="none" stroke="#4a3010" stroke-width={size * 0.008}
+  />
+  <!-- Thin outer border of text ring -->
+  <circle
+    cx={cx} cy={cy} r={rRingOuter}
+    fill="none" stroke="#4a3010" stroke-width={size * 0.008}
+  />
+
+  <!-- ── 5. Circular text ───────────────────────────────────── -->
+
+  <!-- Top: "MARITIME ASSET SECURITY AND TRAINING" -->
+  <text
+    font-family="IBM Plex Sans, Montserrat, sans-serif"
+    font-size={fs}
+    font-weight="700"
+    fill="#1c1408"
+    letter-spacing={lsT}
+  >
+    <textPath
+      href={`#${idTF}`}
+      startOffset="50%"
+      text-anchor="middle"
+    >MARITIME ASSET SECURITY AND TRAINING</textPath>
+  </text>
+
+  <!-- Bottom: "✦ MAST SECURITY LTD ✦" -->
+  <text
+    font-family="IBM Plex Sans, Montserrat, sans-serif"
+    font-size={fs}
+    font-weight="700"
+    fill="#1c1408"
+    letter-spacing={lsB}
+  >
+    <textPath
+      href={`#${idBF}`}
+      startOffset="50%"
+      text-anchor="middle"
+    >✦ MAST SECURITY LTD ✦</textPath>
+  </text>
+
+  <!-- ── 6. Coin face ──────────────────────────────────────── -->
+  <circle cx={cx} cy={cy} r={rFace} fill={`url(#${idCG})`}/>
+
+  <!-- Inner separator rings (double line) -->
+  <circle
+    cx={cx} cy={cy} r={rFace}
+    fill="none" stroke="#6a4e1a" stroke-width={size * 0.006}
+  />
+  <circle
+    cx={cx} cy={cy} r={rFace - size * 0.018}
+    fill="none" stroke="#8a6a2a" stroke-width={size * 0.003}
+    opacity="0.6"
+  />
+
+  <!-- ── 7. Inner decorative double ring ───────────────────── -->
+  <circle
+    cx={cx} cy={cy} r={rDecoOuter}
+    fill="none" stroke="#7a5820" stroke-width={size * 0.007}
+  />
+  <circle
+    cx={cx} cy={cy} r={rDecoInner}
+    fill="none" stroke="#7a5820" stroke-width={size * 0.003}
+    opacity="0.7"
+  />
+
+  <!-- ── 8. MAST logo — engraved in the coin centre ─────────── -->
+  <!-- opacity creates an engraved/impressed look on the gold face -->
+  <g
+    transform={`translate(${logoX},${logoY}) scale(${logoScale})`}
+    opacity="0.72"
+    clip-path={`url(#${idCC})`}
+    set:html={logoInner}
+  />
+
+</svg>

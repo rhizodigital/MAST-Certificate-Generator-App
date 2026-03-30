@@ -1,0 +1,46 @@
+---
+/**
+ * CornerOrnament — decorative corner SVG used by certificate templates.
+ * Place four of these (with different rotations) for a full border treatment.
+ */
+interface Props {
+  /** CSS color string — defaults to current theme accent */
+  color?: string;
+  /** Size in px */
+  size?: number;
+  /** CSS transform rotation (e.g. 'scaleX(-1)', 'scale(-1,-1)') */
+  transform?: string;
+  /** Optional extra class */
+  class?: string;
+}
+
+const {
+  color     = 'var(--cert-primary)',
+  size      = 72,
+  transform = '',
+  class: cls = '',
+} = Astro.props;
+---
+
+<svg
+  width={size}
+  height={size}
+  viewBox="0 0 80 80"
+  fill="none"
+  xmlns="http://www.w3.org/2000/svg"
+  class={cls}
+  style={transform ? `transform:${transform}` : undefined}
+  aria-hidden="true"
+>
+  <!-- Main L-lines -->
+  <path d="M4 4 L76 4"  stroke={color} stroke-width="1.5" />
+  <path d="M4 4 L4 76"  stroke={color} stroke-width="1.5" />
+  <!-- Diagonal accent -->
+  <path d="M4 4 L22 22" stroke={color} stroke-width="1" />
+  <!-- Corner dot -->
+  <circle cx="4" cy="4" r="3" fill={color} />
+  <!-- Step lines -->
+  <path d="M16 4 L4 16" stroke={color} stroke-width="0.75" opacity="0.45" />
+  <path d="M28 4 L4 28" stroke={color} stroke-width="0.75" opacity="0.45" />
+  <path d="M40 4 L4 40" stroke={color} stroke-width="0.75" opacity="0.45" />
+</svg>

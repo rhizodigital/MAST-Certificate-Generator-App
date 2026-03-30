@@ -1,0 +1,63 @@
+---
+/**
+ * BorderFrame — decorative inset border rendered as a set of absolute-positioned divs.
+ * Place inside a `position:relative` container (the certificate root div).
+ *
+ * Variants:
+ *  'single'  — one border line
+ *  'double'  — two concentric border lines
+ *  'ornate'  — two lines + a thicker outer line + corner ornaments (via CornerOrnament)
+ */
+import CornerOrnament from './CornerOrnament.astro';
+
+interface Props {
+  variant?:       'single' | 'double' | 'ornate';
+  primaryColor?:  string;
+  accentColor?:   string;
+  cornerSize?:    number;
+}
+
+const {
+  variant      = 'double',
+  primaryColor = 'var(--cert-border)',
+  accentColor  = 'var(--cert-border-inner)',
+  cornerSize   = 68,
+} = Astro.props;
+
+const outerInset  = variant === 'ornate' ? 14 : 16;
+const innerInset  = outerInset + 8;
+const outerBorder = variant === 'ornate' ? `3px solid ${primaryColor}` : `2px solid ${primaryColor}`;
+const innerBorder = `1px solid ${accentColor}`;
+---
+
+<!-- Outer border -->
+<div
+  style={`position:absolute;inset:${outerInset}px;border:${outerBorder};pointer-events:none;z-index:2;`}
+  aria-hidden="true"
+></div>
+
+{(variant === 'double' || variant === 'ornate') && (
+  <!-- Inner border -->
+  <div
+    style={`position:absolute;inset:${innerInset}px;border:${innerBorder};pointer-events:none;z-index:2;`}
+    aria-hidden="true"
+  ></div>
+)}
+
+{variant === 'ornate' && (
+  <>
+    <!-- Corner ornaments at each corner -->
+    <div style={`position:absolute;top:${outerInset}px;left:${outerInset}px;z-index:3;`}>
+      <CornerOrnament color={primaryColor} size={cornerSize} />
+    </div>
+    <div style={`position:absolute;top:${outerInset}px;right:${outerInset}px;z-index:3;`}>
+      <CornerOrnament color={primaryColor} size={cornerSize} transform="scaleX(-1)" />
+    </div>
+    <div style={`position:absolute;bottom:${outerInset}px;left:${outerInset}px;z-index:3;`}>
+      <CornerOrnament color={primaryColor} size={cornerSize} transform="scaleY(-1)" />
+    </div>
+    <div style={`position:absolute;bottom:${outerInset}px;right:${outerInset}px;z-index:3;`}>
+      <CornerOrnament color={primaryColor} size={cornerSize} transform="scale(-1,-1)" />
+    </div>
+  </>
+)}
