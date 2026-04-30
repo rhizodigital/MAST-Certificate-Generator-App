@@ -1,0 +1,189 @@
+---
+/**
+ * MAST Recognition — Split header design.
+ * Dark navy header with constellation pattern + italic "Certificate" title.
+ * White body with award type, recipient name in gold, dual signatories.
+ * Matches the official MAST certificate of recognition design.
+ * A4 Portrait.
+ *
+ * Fields:
+ *  recipientName  → recipient's full name
+ *  awardType      → award title (e.g. "Best Newcomer of the Year 2026")
+ *  date           → date awarded
+ *  issuerName     → left signatory name
+ *  issuerTitle    → left signatory title
+ *  issuer2Name    → right signatory name
+ *  issuer2Title   → right signatory title
+ *  customMessage  → optional body text / citation
+ */
+import { Image as AstroImage } from "astro:assets";
+import CertificateLayout from "../../layouts/CertificateLayout.astro";
+import DividerLine from "../../certificate-templates/certificate-components/DividerLine.astro";
+import MastLogoWhite from "../../assets/MastLogoWhite.svg";
+import HeaderHex from "../../assets/HeaderHex.png";
+import MastLogo from "../../assets/MastLogo.svg";
+---
+
+<CertificateLayout
+  templateId="mast-recognition-portrait"
+  orientation="portrait"
+>
+  <div
+    class="cert cert-recognition relative overflow-hidden h-280.5 w-198.5 bg-white flex flex-col"
+    id="cert-canvas"
+  >
+    <!-- ════════════════════════════════════════════════════
+         HEADER — Dark navy with constellation + title
+         ════════════════════════════════════════════════════ -->
+    <header
+      class="relative shrink-0 overflow-hidden bg-cert-recognition-header h-1/3 flex flex-col justify-center py-18"
+    >
+      <AstroImage
+        src={HeaderHex}
+        alt=""
+        class="absolute inset-0 size-full object-cover z-2 pointer-events-none"
+      />
+
+      <!-- ── Header content ───────────────────────────────── -->
+      <div
+        class="relative z-10 flex items-end justify-between h-full px-12 pt-1"
+      >
+        <!-- Left: Certificate title -->
+        <div class="flex flex-col gap-3">
+          <!-- "Certificate" in large italic gold serif -->
+          <h1
+            class="m-0 font-serif italic font-normal leading-none text-mast-gold"
+            style="font-size: 4.8rem; letter-spacing: -0.01em;"
+          >
+            Certificate
+          </h1>
+          <!-- "OF RECOGNITION" in white caps -->
+          <p
+            class="m-0 font-sans font-bold uppercase tracking-[0.35em] text-white leading-none"
+            style="font-size: 1.35rem;"
+          >
+            of Recognition
+          </p>
+        </div>
+
+        <!-- Right: MAST Seal -->
+        <MastLogoWhite class="h-32 w-auto" />
+      </div>
+
+      <!-- Gold bottom border -->
+      <div
+        class="absolute bottom-0 left-0 right-0 h-1 bg-mast-gold opacity-80"
+        aria-hidden="true"></div>
+    </header>
+
+    <!-- ════════════════════════════════════════════════════
+         BODY — White with award details and signatories
+         ════════════════════════════════════════════════════ -->
+    <div
+      class="relative flex-1 flex flex-col items-center justify-between p-16"
+    >
+      <!-- Award type + recipient block -->
+      <div
+        class="flex flex-col items-center justify-center gap-2.5 text-center w-full grow"
+      >
+        <div class="flex flex-col items-center text-center gap-3 pb-16">
+          <!-- Award type heading -->
+          <p
+            class="m-0 font-sans font-bold uppercase tracking-[0.2em] text-mast-navy leading-none"
+            style="font-size: 0.82rem;"
+            data-field="awardType">Award / Certificate Type</p
+          >
+
+          <!-- "This certificate is presented to" -->
+          <p
+            class="m-0 font-sans text-mast-navy leading-none mt-1"
+            style="font-size: 0.92rem;">This certificate is presented to</p
+          >
+
+          <!-- Recipient name — large, gold, spaced -->
+          <h2
+            class="m-0 font-serif text-6xl font-normal text-mast-gold leading-none mt-1"
+            data-field="recipientName">Recipient Name</h2
+          >
+
+          <!-- Custom message / citation -->
+          <p
+            class="cert-recognition-message m-0 font-sans text-sm text-mast-navy/80 leading-[1.65] mt-2 max-w-140 text-pretty"
+            data-field="customMessage"
+            >This award recognises outstanding performance, commitment, and
+            dedication. Your contribution sets a high standard and reflects the
+            values we stand for.</p
+          >
+        </div>
+      </div>
+
+      <!-- Divider + Signatories + Logo -->
+      <div class="flex flex-col gap-2.5 w-full">
+        <DividerLine
+          color="var(--color-mast-navy)"
+          class="w-full opacity-15 pb-2"
+          variant="line"
+        />
+
+        <div class="flex items-end justify-between w-full">
+          <!-- Signatory 1 (left) -->
+          <div class="flex flex-col items-start gap-0.5 min-w-47.5">
+            <DividerLine
+              color="var(--color-mast-navy)"
+              class="w-36 mb-1 opacity-40"
+              variant="line"
+            />
+            <p
+              class="m-0 font-sans font-semibold text-mast-navy leading-snug"
+              style="font-size: 1.05rem;"
+              data-field="issuerName">Adam Usher</p
+            >
+            <p
+              class="m-0 font-sans font-medium uppercase tracking-[0.18em] text-mast-muted"
+              style="font-size: 0.65rem;"
+              data-field="issuerTitle">Director of Security</p
+            >
+          </div>
+
+          <!-- Centre: MAST logo + cert ID -->
+          <div class="flex flex-col items-center gap-1.5">
+            <MastLogo class="h-22 w-auto mb-2" />
+            <p
+              class="m-0 font-sans font-medium uppercase tracking-[0.14em] text-mast-muted/60"
+              style="font-size: 0.6rem;"
+            >
+              Cert. ID <span data-cert-id class="text-mast-muted"
+                >MAST-2026-000000</span
+              >
+            </p>
+          </div>
+
+          <!-- Signatory 2 (right) -->
+          <div class="flex flex-col items-end gap-0.5 min-w-47.5">
+            <DividerLine
+              color="var(--color-mast-navy)"
+              class="w-36 mb-1 opacity-40"
+              variant="line"
+            />
+            <p
+              class="m-0 font-sans font-semibold text-mast-navy leading-snug"
+              style="font-size: 1.05rem;"
+              data-field="issuer2Name">Phillip Cable</p
+            >
+            <p
+              class="m-0 font-sans font-medium uppercase tracking-[0.18em] text-mast-muted"
+              style="font-size: 0.65rem;"
+              data-field="issuer2Title">Chief Executive Officer</p
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</CertificateLayout>
+
+<style is:global>
+  .cert-recognition .cert-recognition-message:empty {
+    display: none;
+  }
+</style>

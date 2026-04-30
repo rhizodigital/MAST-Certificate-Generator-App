@@ -27,6 +27,13 @@ export interface TemplateMeta {
 export const TEMPLATES: TemplateMeta[] = [
   // ── MAST Security certificate styles ────────────────────────
   {
+    id:          'mast-recognition-portrait',
+    name:        'Recognition (Portrait)',
+    category:    'MAST Security',
+    orientation: 'portrait',
+    emoji:       '🏅',
+  },
+  {
     id:          'mast-recognition',
     name:        'Recognition',
     category:    'MAST Security',
